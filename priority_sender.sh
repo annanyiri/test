@@ -24,12 +24,12 @@ for i in 4 6; do
     for p in u i r; do
         echo "Test IPV$i, prot: $p" >&2
         for value in "${priority_values[@]}"; do
-            ./cmsg_sender_new -a $value -p $p $TGT $PORT
+            ./cmsg_sender_new -$i -a $value -p $p $TGT $PORT
             setsockopt_priority_bytes_num=($(get_queue_bytes))
 
             sleep 1
 
-            ./cmsg_sender_new -P $value -p $p $TGT $PORT
+            ./cmsg_sender_new -$i -P $value -p $p $TGT $PORT
             cmsg_priority_bytes_num=($(get_queue_bytes))
 
             if [[ "${cmsg_priority_bytes_num[$actual_queue]}" != "${setsockopt_priority_bytes_num[$actual_queue]}" ]]; then
