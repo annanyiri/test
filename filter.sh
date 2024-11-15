@@ -31,7 +31,7 @@ create_filter() {
     local cmd="tc -n $ns filter add dev $dev egress pref 1 handle $handle \
     proto 802.1q flower vlan_prio $vlan_prio vlan_ethtype $ip_type"
 
-    if [[ "$ip_type" == "ipv4" && "$proto" == "u" ]]; then
+    if [[ "$proto" == "u" ]]; then
         ip_proto="udp"
     elif [[ "$ip_type" == "ipv4" && "$proto" == "i" ]]; then
         ip_proto="icmp"
@@ -39,7 +39,7 @@ create_filter() {
         ip_proto="icmpv6"
     fi
 
-    if [[ "$ip_proto" != "raw" ]]; then
+    if [[ "$proto" != "r" ]]; then
         cmd="$cmd ip_proto $ip_proto"
     fi
 
@@ -97,3 +97,4 @@ for i in 4 6; do
         FILTER_COUNTER=$((FILTER_COUNTER + 10))
     done
 done
+
