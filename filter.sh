@@ -93,7 +93,6 @@ for i in 4 6; do
                 | jq ".[] | select(.options.handle == ${handle}) | \
                 .options.actions[0].stats.packets")
             [[ $pkts == 1 ]] || echo "prio $priority: expected 1, got $pkts"
-            tc -n ns1 filter del dev dummy1 egress handle $handle flower
         done
         FILTER_COUNTER=$((FILTER_COUNTER + 10))
     done
