@@ -3,19 +3,15 @@
 IP4=192.0.2.1/24
 TGT4=192.0.2.2/24 
 TGT4_NO_MASK=192.0.2.2
+TGT4_RAW=192.0.2.3/24
+TGT4_RAW_NO_MASK=192.0.2.3
 IP6=2001:db8::1/64
 TGT6=2001:db8::2/64
 TGT6_NO_MASK=2001:db8::2
+TGT6_RAW=2001:db8::3/64
+TGT6_RAW_NO_MASK=2001:db8::3
 PORT=1234
 DELAY=4000
-
-cleanup() {
-    ip link del dummy1 2>/dev/null
-    ip -n ns1 link del dummy1.10 2>/dev/null
-    ip netns del ns1 2>/dev/null
-}
-
-trap cleanup EXIT
 
 
 create_filter() {
@@ -45,9 +41,28 @@ create_filter() {
 
     cmd="$cmd dst_ip $dst_ip action pass"
 
-    echo $cmd
     eval $cmd
 }
+
+TOTAL_TESTS=0
+FAILED_TESTS=0
+
+check_result() {
+    ((TOTAL_TESTS++))
+    if [ "$1" -ne 0 ]; then
+        ((FAILED_TESTS++))
+    fi
+}
+
+cleanup() {
+    ip link del dummy1 2>/dev/null
+    ip -n ns1 link del dummy1.10 2>/dev/null
+    ip netns del ns1 2>/dev/null
+}
+
+trap cleanup EXIT
+
+
 
 ip netns add ns1
 
@@ -64,20 +79,31 @@ ip netns exec ns1 bash -c "
 sysctl -w net.ipv4.ping_group_range='0 2147483647'
 exit"
 
+
 ip -n ns1 neigh add $TGT4_NO_MASK lladdr 00:11:22:33:44:55 nud permanent dev \
         dummy1.10
 ip -n ns1 neigh add $TGT6_NO_MASK lladdr 00:11:22:33:44:55 nud permanent dev dummy1.10
-
+ip -n ns1 neigh add $TGT4_RAW_NO_MASK lladdr 00:11:22:33:44:66 nud permanent dev dummy1.10
+ip -n ns1 neigh add $TGT6_RAW_NO_MASK lladdr 00:11:22:33:44:66 nud permanent dev dummy1.10
 
 tc -n ns1 qdisc add dev dummy1 clsact
 
 FILTER_COUNTER=10
 
 for i in 4 6; do
-    [ $i == 4 ] && TGT=$TGT4_NO_MASK || TGT=$TGT6_NO_MASK
     for proto in u i r; do
         echo "Test IPV$i, prot: $proto"
         for priority in {0..7}; do
+            if [[ $i == 4 && $proto == "r" ]]; then
+                TGT=$TGT4_RAW_NO_MASK
+            elif [[ $i == 6 && $proto == "r" ]]; then
+                TGT=$TGT6_RAW_NO_MASK
+            elif [ $i == 4 ]; then
+                TGT=$TGT4_NO_MASK
+            else
+                TGT=$TGT6_NO_MASK
+            fi
+
             handle="${FILTER_COUNTER}${priority}"
 
             create_filter ns1 dummy1 $handle $priority ipv$i $proto $TGT
@@ -85,14 +111,28 @@ for i in 4 6; do
             pkts=$(tc -n ns1 -j -s filter show dev dummy1 egress \
                 | jq ".[] | select(.options.handle == ${handle}) | \
                 .options.actions[0].stats.packets")
-            [[ $pkts == 0 ]] || echo "prio $priority: expected 0, got $pkts"
+
+            if [[ $pkts == 0 ]]; then
+                check_result 0
+            else
+                echo "prio $priority: expected 0, got $pkts"
+                check_result 1
+            fi
 
             ip netns exec ns1 ./cmsg_sender -$i -Q $priority -d "${DELAY}" -p $proto $TGT $PORT
+            ip netns exec ns1 ./cmsg_sender -$i -P $priority -d "${DELAY}" -p $proto $TGT $PORT
+
 
             pkts=$(tc -n ns1 -j -s filter show dev dummy1 egress \
                 | jq ".[] | select(.options.handle == ${handle}) | \
                 .options.actions[0].stats.packets")
-            [[ $pkts == 1 ]] || echo "prio $priority: expected 1, got $pkts"
+        
+            if [[ $pkts == 2 ]]; then
+                check_result 0
+            else
+                echo "prio $priority: expected 2, got $pkts"
+                check_result 1
+            fi
         done
         FILTER_COUNTER=$((FILTER_COUNTER + 10))
     done
