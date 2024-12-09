@@ -3,7 +3,8 @@
 
 source lib.sh
 
-readonly KSFT_SKIP=4
+DIR="$(dirname $(readlink -f "$0"))"
+source "${DIR}"/../kselftest/ktap_helpers.sh
 
 IP4=192.0.2.1/24
 TGT4=192.0.2.2
