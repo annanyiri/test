@@ -23,6 +23,7 @@ int main() {
     char cbuf[1024];
     struct cmsghdr *cmsg;
     __u32 recv_priority = 0;
+    __u32 priority = 5;
     int err;
 
     recv_fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -31,8 +32,7 @@ int main() {
         return -errno;
     }
 
-    int enable = 1;
-    err = setsockopt(recv_fd, SOL_SOCKET, SO_RCVPRIORITY, &enable, sizeof(enable));
+    err = setsockopt(recv_fd, SOL_SOCKET, SO_RCVPRIORITY, &priority, sizeof(priority));
     
     if (err < 0) {
         perror("Recv setsockopt error");
@@ -64,7 +64,6 @@ int main() {
     send_addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 
 
-    __u32 priority = 5;
     err = setsockopt(send_fd, SOL_SOCKET, SO_PRIORITY, &priority, sizeof(priority));
     if (err < 0) {
         perror("Send setsockopt error");
