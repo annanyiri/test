@@ -1,0 +1,63 @@
+anna-nyiri@virtme-ng:~/Dokumentumok/Egyetem/diplomamunka/myLinux/linux$ make -C tools/testing/selftests TARGETS="net" TEST_PROGS=so_rcv_listener TTEST_GEN_PROGS="" run_tests
+make: Entering directory '/home/anna-nyiri/Dokumentumok/Egyetem/diplomamunka/myLinux/linux/tools/testing/selftests'
+make[1]: Entering directory '/home/anna-nyiri/Dokumentumok/Egyetem/diplomamunka/myLinux/linux/tools/testing/selftests/net'
+  CC       reuseport_bpf
+  CC       reuseport_bpf_cpu
+  CC       reuseport_bpf_numa
+  CC       reuseport_dualstack
+  CC       reuseaddr_conflict
+  CC       tls
+  CC       tun
+  CC       tap
+  CC       epoll_busy_poll
+  CC       sk_bind_sendto_listen
+  CC       sk_connect_zero_addr
+  CC       sk_so_peek_off
+  CC       so_incoming_cpu
+  CC       bind_wildcard
+  CC       bind_timewait
+  CC       so_rcv_listener
+  CC       socket
+socket.c: In function ‘run_tests’:
+socket.c:59:25: warning: ignoring return value of ‘strerror_r’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+   59 |                         strerror_r(-s->expect, err_string1, ERR_STRING_SZ);
+      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+socket.c:60:25: warning: ignoring return value of ‘strerror_r’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+   60 |                         strerror_r(errno, err_string2, ERR_STRING_SZ);
+      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+socket.c:73:33: warning: ignoring return value of ‘strerror_r’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+   73 |                                 strerror_r(errno, err_string1, ERR_STRING_SZ);
+      |                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  CC       nettest
+  CC       psock_fanout
+  CC       psock_tpacket
+  CC       msg_zerocopy
+  CC       reuseport_addr_any
+  CC       tcp_mmap
+  CC       tcp_inq
+  CC       psock_snd
+  CC       txring_overwrite
+  CC       udpgso
+  CC       udpgso_bench_tx
+  CC       udpgso_bench_rx
+  CC       ip_defrag
+  CC       so_txtime
+  CC       ipv6_flowlabel
+  CC       ipv6_flowlabel_mgr
+  CC       so_netns_cookie
+  CC       tcp_fastopen_backup_key
+  CC       fin_ack_lat
+  CC       reuseaddr_ports_exhausted
+  CC       hwtstamp_config
+  CC       rxtimestamp
+rxtimestamp.c:60:18: error: ‘SOF_TIMESTAMPING_OPT_RX_FILTER’ undeclared here (not in a function); did you mean ‘SOF_TIMESTAMPING_OPT_ID_TCP’?
+   60 |         SOF_FLAG(SOF_TIMESTAMPING_OPT_RX_FILTER),
+      |                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+rxtimestamp.c:56:23: note: in definition of macro ‘SOF_FLAG’
+   56 | #define SOF_FLAG(f) { f, #f }
+      |                       ^
+make[1]: *** [../lib.mk:222: /home/anna-nyiri/Dokumentumok/Egyetem/diplomamunka/myLinux/linux/tools/testing/selftests/net/rxtimestamp] Error 1
+make[1]: Leaving directory '/home/anna-nyiri/Dokumentumok/Egyetem/diplomamunka/myLinux/linux/tools/testing/selftests/net'
+make: *** [Makefile:200: all] Error 2
+make: Leaving directory '/home/anna-nyiri/Dokumentumok/Egyetem/diplomamunka/myLinux/linux/tools/testing/selftests'
+
